@@ -49,7 +49,7 @@
         const INITIAL_DATA = {
           prestation: [
             { id: 'p1', name: 'Cubage', defaultPrice: 35 },
-            { id: 'p2', name: 'Etages sans ascenseur', defaultPrice: 0.80 }, 
+            { id: 'p2', name: 'Etages sans ascenseur', defaultPrice: 0.70 }, // Modifié à 0.70
             { 
               id: 'p3', 
               name: 'Démontage / Remontage', 
@@ -106,7 +106,7 @@
           ],
           distance: [
             { id: 'l1', name: 'Nombre de camions', defaultPrice: 1200, readOnlyQuantity: true },
-            { id: 'l2', name: 'Distance kilométrique', defaultPrice: 2.20, unit: 'km', info: "Si > 550km : 2.2€/km x Nbr Camions (Remplace le prix camion). Sinon forfait 1200€ s'applique." }, 
+            { id: 'l2', name: 'Distance kilométrique', defaultPrice: 2.20, unit: 'km', info: "Si > 550km : 2.2€/km (Remplace le prix camion). Sinon forfait 1200€ s'applique." }, 
             { id: 'l3', name: 'Chargement le matin', defaultPrice: 400, info: "400€ (1-2 camions) / 800€ (3+ camions)" },
             { id: 'l4', name: 'Option Groupage', defaultPrice: 0, info: "Active le tarif groupage (Plafonné au prix longue distance)" },
           ],
@@ -120,7 +120,7 @@
           const matrix = [];
           for (let m3 = 1; m3 <= 80; m3++) {
             let totalPrice = 135; 
-            let etage = 0.80; 
+            let etage = 0.70; // Modifié à 0.70
             let portage = 0.50; 
             let confort = 150;
             
