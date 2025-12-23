@@ -56,7 +56,7 @@
               defaultPrice: 40, 
               info: "Si mobilier complexe ou long à démonter / remonter alors indiquer '2' pour ce mobilier"
             },
-            { id: 'p4', name: 'Portage (en m)', defaultPrice: 0.50 }, // Prix unitaire 0.50€
+            { id: 'p4', name: 'Portage (en m)', defaultPrice: 0.50 }, 
             { 
               id: 'p8', 
               name: "Distance d'approche (en km)", 
@@ -106,7 +106,7 @@
           ],
           distance: [
             { id: 'l1', name: 'Nombre de camions', defaultPrice: 1200, readOnlyQuantity: true },
-            { id: 'l2', name: 'Distance kilométrique', defaultPrice: 2.20, unit: 'km', info: "Si > 550km : 2.2€/km (Remplace le prix camion). Sinon forfait 1200€ s'applique." }, 
+            { id: 'l2', name: 'Distance kilométrique', defaultPrice: 2.20, unit: 'km', info: "Si > 550km : 2.2€/km x Nbr Camions (Remplace le prix camion). Sinon forfait 1200€ s'applique." }, 
             { id: 'l3', name: 'Chargement le matin', defaultPrice: 400, info: "400€ (1-2 camions) / 800€ (3+ camions)" },
             { id: 'l4', name: 'Option Groupage', defaultPrice: 0, info: "Active le tarif groupage (Plafonné au prix longue distance)" },
           ],
@@ -121,7 +121,7 @@
           for (let m3 = 1; m3 <= 80; m3++) {
             let totalPrice = 135; 
             let etage = 0.80; 
-            let portage = 0.50; // Mise à jour dynamique aussi
+            let portage = 0.50; 
             let confort = 150;
             
             if (m3 >= 66) totalPrice = 435; 
@@ -508,12 +508,11 @@
               return Math.floor(rawTotal / 10) * 10;
             }
             if (id === 'p4') {
-                // MODIFICATION : Si quantité < 31, total = 0
-                if (qty < 31) return 0;
+                if (qty < 31) return 0; // Quantité minimum 31m
 
                 const cubageQty = quantities['p1'] || 0;
                 const nbCamions = quantities['l1'] || 0; 
-                // Formule: Unité de prix (0.5€) * quantité * nombre de camion
+                // Formule: Unité de prix (0.50€) * quantité (distance) * nombre de camion
                 const rawTotal = price * qty * nbCamions;
                 return Math.floor(rawTotal / 10) * 10;
             }
@@ -527,10 +526,17 @@
                         // Cas B Groupage (> 550km)
                         const cubage = quantities['p1'] || 0; 
                         const groupageCalc = ((dist * 2.2) / 20) * cubage * 1.2; 
-                        const standardPrice = dist * 2.2;
+                        
+                        // Calcul du prix standard de longue distance pour le plafonnement
+                        const nbCamions = quantities['l1'] || 0;
+                        const standardPrice = dist * 2.2 * nbCamions; // Standard au KM = dist * 2.2 * nbCamions (Nouvelle formule demandée précédemment)
+                        
                         return Math.min(groupageCalc, standardPrice);
                     } 
-                    return dist * 2.2; 
+                    
+                    // Cas B Standard (> 550km)
+                    const nbCamions = quantities['l1'] || 0;
+                    return dist * 2.2 * nbCamions; // Formule mise à jour: Dist * 2.2 * NbCamions
                 } 
                 return 0; 
             }
@@ -548,6 +554,7 @@
                         // Cas A Groupage (<= 550km)
                         const cubage = quantities['p1'] || 0; 
                         const groupageCalc = (cubage * (1200 / 20)) * 1.2;
+                        // Plafond (vs Standard Camion)
                         const nbCamions = quantities['l1'] || 0;
                         const standardPrice = nbCamions * 1200;
                         return Math.min(groupageCalc, standardPrice);
