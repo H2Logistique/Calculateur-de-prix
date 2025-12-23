@@ -49,14 +49,19 @@
         const INITIAL_DATA = {
           prestation: [
             { id: 'p1', name: 'Cubage', defaultPrice: 35 },
-            { id: 'p2', name: 'Etages sans ascenseur', defaultPrice: 0.70 }, // Modifié à 0.70
+            { id: 'p2', name: 'Etages sans ascenseur', defaultPrice: 0.70 }, 
             { 
               id: 'p3', 
               name: 'Démontage / Remontage', 
               defaultPrice: 40, 
               info: "Si mobilier complexe ou long à démonter / remonter alors indiquer '2' pour ce mobilier"
             },
-            { id: 'p4', name: 'Portage (en m)', defaultPrice: 0.50 }, 
+            { 
+              id: 'p4', 
+              name: 'Portage (en m)', 
+              defaultPrice: 0.60, 
+              info: "Renseigner si le portage > à 30m" 
+            }, 
             { 
               id: 'p8', 
               name: "Distance d'approche (en km)", 
@@ -70,13 +75,13 @@
               id: 'p5', 
               name: 'Monte-meuble 1/2 journée', 
               defaultPrice: 220, 
-              info: "Majoration si l'inventaire contient un piano ou si l'étage est au 9ieme ou +"
+              // Info supprimée
             },
             { 
               id: 'p6', 
               name: 'Monte-meuble 1 journée', 
               defaultPrice: 320, 
-              info: "Majoration si l'inventaire contient un piano ou si l'étage est au 9ieme ou +"
+              // Info supprimée
             },
             { id: 'p7', name: 'AOT (Autorisation Stationnement)', defaultPrice: 25 },
             { id: 'ra1', name: 'Supplément > 8ème étage', defaultPrice: 40, info: "Supplément pour étages 9 et 10" },
@@ -106,9 +111,9 @@
           ],
           distance: [
             { id: 'l1', name: 'Nombre de camions', defaultPrice: 1200, readOnlyQuantity: true },
-            { id: 'l2', name: 'Distance kilométrique', defaultPrice: 2.20, unit: 'km', info: "Si > 550km : 2.2€/km (Remplace le prix camion). Sinon forfait 1200€ s'applique." }, 
-            { id: 'l3', name: 'Chargement le matin', defaultPrice: 400, info: "400€ (1-2 camions) / 800€ (3+ camions)" },
-            { id: 'l4', name: 'Option Groupage', defaultPrice: 0, info: "Active le tarif groupage (Plafonné au prix longue distance)" },
+            { id: 'l2', name: 'Distance kilométrique', defaultPrice: 2.20, unit: 'km' }, // Info supprimée
+            { id: 'l3', name: 'Chargement le matin', defaultPrice: 400 }, // Info supprimée
+            { id: 'l4', name: 'Option Groupage', defaultPrice: 0 }, // Info supprimée
           ],
           groupage: [
             { id: 'g1', name: 'Forfait Groupage', defaultPrice: 0, readOnlyQuantity: true, info: "Calculé sur la base du cubage ou de la distance" },
@@ -120,7 +125,7 @@
           const matrix = [];
           for (let m3 = 1; m3 <= 80; m3++) {
             let totalPrice = 135; 
-            let etage = 0.70; // Modifié à 0.70
+            let etage = 0.70; 
             let portage = 0.50; 
             let confort = 150;
             
@@ -512,7 +517,7 @@
 
                 const cubageQty = quantities['p1'] || 0;
                 const nbCamions = quantities['l1'] || 0; 
-                // Formule: Unité de prix (0.50€) * quantité (distance) * nombre de camion
+                // Formule: Unité de prix (0.60€) * quantité (distance) * nombre de camion
                 const rawTotal = price * qty * nbCamions;
                 return Math.floor(rawTotal / 10) * 10;
             }
