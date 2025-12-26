@@ -60,7 +60,7 @@
             { 
               id: 'p8', 
               name: "Distance d'approche (en km)", 
-              defaultPrice: 0.80, // Prix modifié à 0.80€
+              defaultPrice: 0.80, 
               unit: 'km', 
               info: "Remplir si l'approche de Paris + Trajet > 50km (Ne pas remplir pour les longue distance)" 
             },
@@ -107,7 +107,7 @@
             { id: 'l2', name: 'Distance kilométrique', defaultPrice: 2.20, unit: 'km' }, 
             { id: 'l3', name: 'Chargement le matin', defaultPrice: 400 }, 
             { id: 'l4', name: 'Option Groupage', defaultPrice: 0 }, 
-            { id: 'l5', name: 'Option Confort', defaultPrice: 0, info: "Ajoute le tarif confort à l'offre longue distance" }, // Nouvelle option
+            { id: 'l5', name: 'Option Confort', defaultPrice: 0, info: "Ajoute le tarif confort à l'offre longue distance" }, 
           ],
           groupage: [
             { id: 'g1', name: 'Forfait Groupage', defaultPrice: 0, readOnlyQuantity: true, info: "Calculé sur la base du cubage ou de la distance" },
@@ -298,7 +298,7 @@
         }) => {
           const [isExpanded, setIsExpanded] = useState(defaultExpanded);
           const sectionTotal = items.reduce((sum, item) => sum + calculateRowTotal(item.id), 0);
-          const booleanItems = ['p5', 'p6', 'p7', 'l3', 'l4', 'l5', 'ra1', 'ra2', 'ra3']; // Added l5
+          const booleanItems = ['p5', 'p6', 'p7', 'l3', 'l4', 'l5', 'ra1', 'ra2', 'ra3']; 
 
           return (
             <div className="mb-4 bg-white rounded-lg shadow-sm overflow-hidden border border-slate-200">
@@ -580,11 +580,14 @@
           const p8Total = calculateRowTotal('p8');
           const prestationLongDistanceAddon = prestationTotal - p1Total - p8Total;
           
-          let thirdOfferTotalBase = distanceSectionTotal + materielTotal + raTotal + prestationLongDistanceAddon;
+          let thirdOfferTotalBase = 0;
           
-          // Ajout option confort si cochée (l5)
+          // MODIF: Si "Option Confort" (l5) est cochée, on N'INCLUT PAS le matériel
           if (quantities['l5'] === 1) {
-              thirdOfferTotalBase += (prices['c1'] || 0);
+             thirdOfferTotalBase = distanceSectionTotal + raTotal + prestationLongDistanceAddon + (prices['c1'] || 0);
+          } else {
+             // Sinon comportement standard (inclut matériel)
+             thirdOfferTotalBase = distanceSectionTotal + materielTotal + raTotal + prestationLongDistanceAddon;
           }
           
           thirdOfferTotalBase = roundTo10(thirdOfferTotalBase);
