@@ -56,16 +56,11 @@
               defaultPrice: 40, 
               info: "Si mobilier complexe ou long à démonter / remonter alors indiquer '2' pour ce mobilier"
             },
-            { 
-              id: 'p4', 
-              name: 'Portage (en m)', 
-              defaultPrice: 0.60, 
-              info: "Renseigner si le portage > à 30m" 
-            }, 
+            { id: 'p4', name: 'Portage (en m)', defaultPrice: 0.50 }, 
             { 
               id: 'p8', 
               name: "Distance d'approche (en km)", 
-              defaultPrice: 0.80, 
+              defaultPrice: 0.80, // Prix modifié à 0.80€
               unit: 'km', 
               info: "Remplir si l'approche de Paris + Trajet > 50km (Ne pas remplir pour les longue distance)" 
             },
@@ -75,13 +70,11 @@
               id: 'p5', 
               name: 'Monte-meuble 1/2 journée', 
               defaultPrice: 220, 
-              // Info supprimée
             },
             { 
               id: 'p6', 
               name: 'Monte-meuble 1 journée', 
               defaultPrice: 320, 
-              // Info supprimée
             },
             { id: 'p7', name: 'AOT (Autorisation Stationnement)', defaultPrice: 25 },
             { id: 'ra1', name: 'Supplément > 8ème étage', defaultPrice: 40, info: "Supplément pour étages 9 et 10" },
@@ -111,9 +104,10 @@
           ],
           distance: [
             { id: 'l1', name: 'Nombre de camions', defaultPrice: 1200, readOnlyQuantity: true },
-            { id: 'l2', name: 'Distance kilométrique', defaultPrice: 2.20, unit: 'km' }, // Info supprimée
-            { id: 'l3', name: 'Chargement le matin', defaultPrice: 400 }, // Info supprimée
-            { id: 'l4', name: 'Option Groupage', defaultPrice: 0 }, // Info supprimée
+            { id: 'l2', name: 'Distance kilométrique', defaultPrice: 2.20, unit: 'km' }, 
+            { id: 'l3', name: 'Chargement le matin', defaultPrice: 400 }, 
+            { id: 'l4', name: 'Option Groupage', defaultPrice: 0 }, 
+            { id: 'l5', name: 'Option Confort', defaultPrice: 0, info: "Ajoute le tarif confort à l'offre longue distance" }, // Nouvelle option
           ],
           groupage: [
             { id: 'g1', name: 'Forfait Groupage', defaultPrice: 0, readOnlyQuantity: true, info: "Calculé sur la base du cubage ou de la distance" },
@@ -304,7 +298,7 @@
         }) => {
           const [isExpanded, setIsExpanded] = useState(defaultExpanded);
           const sectionTotal = items.reduce((sum, item) => sum + calculateRowTotal(item.id), 0);
-          const booleanItems = ['p5', 'p6', 'p7', 'l3', 'l4', 'ra1', 'ra2', 'ra3'];
+          const booleanItems = ['p5', 'p6', 'p7', 'l3', 'l4', 'l5', 'ra1', 'ra2', 'ra3']; // Added l5
 
           return (
             <div className="mb-4 bg-white rounded-lg shadow-sm overflow-hidden border border-slate-200">
@@ -390,7 +384,7 @@
                             </td>
                             <td className="px-6 py-4 text-right">
                                 {item.id === 'l2' ? <span className="text-slate-600 font-medium">{formatCurrency(prices[item.id])}</span> :
-                                 item.id === 'l4' ? <span className="text-slate-400 text-xs italic">Option</span> :
+                                 (item.id === 'l4' || item.id === 'l5') ? <span className="text-slate-400 text-xs italic">Option</span> :
                                  item.id === 'g1' ? <span className="text-slate-400 text-xs italic">Forfait</span> :
                                  <span className="text-slate-600 font-medium">{formatCurrency(prices[item.id])}</span>}
                             </td>
@@ -513,11 +507,9 @@
               return Math.floor(rawTotal / 10) * 10;
             }
             if (id === 'p4') {
-                if (qty < 31) return 0; // Quantité minimum 31m
-
+                if (qty < 31) return 0; 
                 const cubageQty = quantities['p1'] || 0;
                 const nbCamions = quantities['l1'] || 0; 
-                // Formule: Unité de prix (0.60€) * quantité (distance) * nombre de camion
                 const rawTotal = price * qty * nbCamions;
                 return Math.floor(rawTotal / 10) * 10;
             }
@@ -531,17 +523,10 @@
                         // Cas B Groupage (> 550km)
                         const cubage = quantities['p1'] || 0; 
                         const groupageCalc = ((dist * 2.2) / 20) * cubage * 1.2; 
-                        
-                        // Calcul du prix standard de longue distance pour le plafonnement
-                        const nbCamions = quantities['l1'] || 0;
-                        const standardPrice = dist * 2.2 * nbCamions; // Standard au KM = dist * 2.2 * nbCamions (Nouvelle formule demandée précédemment)
-                        
+                        const standardPrice = dist * 2.2;
                         return Math.min(groupageCalc, standardPrice);
                     } 
-                    
-                    // Cas B Standard (> 550km)
-                    const nbCamions = quantities['l1'] || 0;
-                    return dist * 2.2 * nbCamions; // Formule mise à jour: Dist * 2.2 * NbCamions
+                    return dist * 2.2; 
                 } 
                 return 0; 
             }
@@ -559,7 +544,6 @@
                         // Cas A Groupage (<= 550km)
                         const cubage = quantities['p1'] || 0; 
                         const groupageCalc = (cubage * (1200 / 20)) * 1.2;
-                        // Plafond (vs Standard Camion)
                         const nbCamions = quantities['l1'] || 0;
                         const standardPrice = nbCamions * 1200;
                         return Math.min(groupageCalc, standardPrice);
@@ -567,6 +551,8 @@
                 } 
                 return 0; 
             }
+            if (id === 'l5') return 0; // Option Confort Longue distance, prix ajouté dans récapitulatif
+
             if (id === 'g1') return 0; 
             
             if (['ra1', 'ra2', 'ra3'].includes(id)) {
@@ -593,7 +579,15 @@
           const p1Total = calculateRowTotal('p1');
           const p8Total = calculateRowTotal('p8');
           const prestationLongDistanceAddon = prestationTotal - p1Total - p8Total;
-          const thirdOfferTotalBase = roundTo10(distanceSectionTotal + materielTotal + raTotal + prestationLongDistanceAddon);
+          
+          let thirdOfferTotalBase = distanceSectionTotal + materielTotal + raTotal + prestationLongDistanceAddon;
+          
+          // Ajout option confort si cochée (l5)
+          if (quantities['l5'] === 1) {
+              thirdOfferTotalBase += (prices['c1'] || 0);
+          }
+          
+          thirdOfferTotalBase = roundTo10(thirdOfferTotalBase);
 
           const applyAdjustment = (amount) => amount + (amount * (adjustment / 100));
           const standardFinal = roundTo10(applyAdjustment(baseTotal));
@@ -712,6 +706,4 @@
         root.render(<App />);
     </script>
 </body>
-
 </html>
-
