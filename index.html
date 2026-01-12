@@ -510,6 +510,7 @@
                 if (qty < 31) return 0; 
                 const cubageQty = quantities['p1'] || 0;
                 const nbCamions = quantities['l1'] || 0; 
+                // MODIF : Calcul Portage = 0.50 * distance * nb camions
                 const rawTotal = price * qty * nbCamions;
                 return Math.floor(rawTotal / 10) * 10;
             }
@@ -523,10 +524,17 @@
                         // Cas B Groupage (> 550km)
                         const cubage = quantities['p1'] || 0; 
                         const groupageCalc = ((dist * 2.2) / 20) * cubage * 1.2; 
-                        const standardPrice = dist * 2.2;
+                        
+                        // Calcul du prix standard de longue distance pour le plafonnement
+                        const nbCamions = quantities['l1'] || 0;
+                        const standardPrice = dist * 2.2 * nbCamions; // Standard au KM = dist * 2.2 * nbCamions (Nouvelle formule demandée précédemment)
+                        
                         return Math.min(groupageCalc, standardPrice);
                     } 
-                    return dist * 2.2; 
+                    
+                    // Cas B Standard (> 550km)
+                    const nbCamions = quantities['l1'] || 0;
+                    return dist * 2.2 * nbCamions; // Formule mise à jour: Dist * 2.2 * NbCamions
                 } 
                 return 0; 
             }
@@ -544,6 +552,7 @@
                         // Cas A Groupage (<= 550km)
                         const cubage = quantities['p1'] || 0; 
                         const groupageCalc = (cubage * (1200 / 20)) * 1.2;
+                        // Plafond (vs Standard Camion)
                         const nbCamions = quantities['l1'] || 0;
                         const standardPrice = nbCamions * 1200;
                         return Math.min(groupageCalc, standardPrice);
