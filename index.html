@@ -62,7 +62,7 @@
               name: "Distance d'approche (en km)", 
               defaultPrice: 0.80, 
               unit: 'km', 
-              info: "Calcul : Distance x 0,80€ x Nbr Camions (Ne pas remplir pour les longue distance)" 
+              info: "Calcul : Distance x 0,80€ x Nbr Camions" 
             },
           ],
           ra_monte_meuble: [
@@ -493,11 +493,12 @@
           const calculateRowTotal = (id) => {
             const qty = quantities[id] || 0;
             const price = prices[id] || 0;
+            const isGroupageActive = quantities['l4'] === 1;
+            const isMorningActive = quantities['l3'] === 1;
 
             if (id === 'p8') {
                 const nbCamions = quantities['l1'] || 0;
                 // Calcul direct : qty (distance) * price * nbCamions
-                // Plus de limite min de 50km
                 return qty * price * nbCamions;
             }
             if (id === 'p2') {
@@ -509,6 +510,7 @@
                 if (qty < 31) return 0; 
                 const cubageQty = quantities['p1'] || 0;
                 const nbCamions = quantities['l1'] || 0; 
+                // MODIF : Calcul Portage = 0.50 * distance * nb camions
                 const rawTotal = price * qty * nbCamions;
                 return Math.floor(rawTotal / 10) * 10;
             }
