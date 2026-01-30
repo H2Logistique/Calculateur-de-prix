@@ -49,7 +49,7 @@
         const INITIAL_DATA = {
           prestation: [
             { id: 'p1', name: 'Cubage', defaultPrice: 35 },
-            { id: 'p2', name: 'Etages sans ascenseur', defaultPrice: 0.85 }, 
+            { id: 'p2', name: 'Etages sans ascenseur', defaultPrice: 0.70 }, 
             { 
               id: 'p3', 
               name: 'Démontage / Remontage', 
@@ -62,7 +62,7 @@
               name: "Distance d'approche (en km)", 
               defaultPrice: 0.80, 
               unit: 'km', 
-              info: "Remplir si l'approche de Paris + Trajet > 50km (Ne pas remplir pour les longue distance)" 
+              info: "Calcul : Distance x 0,80€ x Nbr Camions (Ne pas remplir pour les longue distance)" 
             },
           ],
           ra_monte_meuble: [
@@ -119,7 +119,7 @@
           const matrix = [];
           for (let m3 = 1; m3 <= 80; m3++) {
             let totalPrice = 135; 
-            let etage = 0.85; 
+            let etage = 0.70; 
             let portage = 0.50; 
             let confort = 150;
             
@@ -493,12 +493,11 @@
           const calculateRowTotal = (id) => {
             const qty = quantities[id] || 0;
             const price = prices[id] || 0;
-            const isGroupageActive = quantities['l4'] === 1;
-            const isMorningActive = quantities['l3'] === 1;
 
             if (id === 'p8') {
-                if (qty < 50) return 0;
                 const nbCamions = quantities['l1'] || 0;
+                // Calcul direct : qty (distance) * price * nbCamions
+                // Plus de limite min de 50km
                 return qty * price * nbCamions;
             }
             if (id === 'p2') {
@@ -510,7 +509,6 @@
                 if (qty < 31) return 0; 
                 const cubageQty = quantities['p1'] || 0;
                 const nbCamions = quantities['l1'] || 0; 
-                // MODIF : Calcul Portage = 0.50 * distance * nb camions
                 const rawTotal = price * qty * nbCamions;
                 return Math.floor(rawTotal / 10) * 10;
             }
@@ -718,6 +716,4 @@
         root.render(<App />);
     </script>
 </body>
-
 </html>
-
