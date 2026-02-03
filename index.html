@@ -49,7 +49,7 @@
         const INITIAL_DATA = {
           prestation: [
             { id: 'p1', name: 'Cubage', defaultPrice: 35 },
-            { id: 'p2', name: 'Etages sans ascenseur', defaultPrice: 1.40 }, 
+            { id: 'p2', name: 'Etages sans ascenseur', defaultPrice: 0.70 }, 
             { 
               id: 'p3', 
               name: 'Démontage / Remontage', 
@@ -62,7 +62,7 @@
               name: "Distance d'approche (en km)", 
               defaultPrice: 0.80, 
               unit: 'km', 
-              info: "Calcul : Distance x 0,80€ x Nbr Camions" 
+              info: "Remplir si l'approche de Paris + Trajet > 50km (Ne pas remplir pour les longue distance)" 
             },
           ],
           ra_monte_meuble: [
@@ -119,18 +119,26 @@
           const matrix = [];
           for (let m3 = 1; m3 <= 80; m3++) {
             let totalPrice = 135; 
-            let etage = 1.40; 
+            let etage = 0.70; 
             let portage = 0.50; 
             let confort = 150;
             
-            if (m3 >= 66) totalPrice = 435; 
-            else if (m3 >= 46) totalPrice = 335; 
-            else if (m3 >= 26) totalPrice = 235; 
+            // Prix unitaire du volume : 35€ par défaut, 40€ si >= 10m3
+            let unitPrice = m3 >= 10 ? 40 : 35;
+
+            if (m3 >= 66) totalPrice = 400 + unitPrice; // 440 ou 435 (ici 440)
+            else if (m3 >= 46) totalPrice = 300 + unitPrice; // 340
+            else if (m3 >= 26) totalPrice = 200 + unitPrice; // 240
             else {
+                // 1 camion (100 + prix)
+                // Pour >= 10 et < 26, unitPrice est 40, donc totalPrice = 140
+                // Pour < 10, unitPrice est 35, donc totalPrice = 135 (sauf exceptions ci-dessous)
+                totalPrice = 100 + unitPrice; 
+                
                 if (m3 === 1) totalPrice = 170;
-                if (m3 === 2) totalPrice = 150;
-                if (m3 === 3) totalPrice = 145;
-                if (m3 === 4 || m3 === 5) totalPrice = 140;
+                else if (m3 === 2) totalPrice = 150;
+                else if (m3 === 3) totalPrice = 145;
+                else if (m3 === 4 || m3 === 5) totalPrice = 140;
             }
 
             const priceString = totalPrice.toString();
@@ -497,8 +505,8 @@
             const isMorningActive = quantities['l3'] === 1;
 
             if (id === 'p8') {
+                if (qty < 50) return 0;
                 const nbCamions = quantities['l1'] || 0;
-                // Calcul direct : qty (distance) * price * nbCamions
                 return qty * price * nbCamions;
             }
             if (id === 'p2') {
@@ -510,7 +518,6 @@
                 if (qty < 31) return 0; 
                 const cubageQty = quantities['p1'] || 0;
                 const nbCamions = quantities['l1'] || 0; 
-                // MODIF : Calcul Portage = 0.50 * distance * nb camions
                 const rawTotal = price * qty * nbCamions;
                 return Math.floor(rawTotal / 10) * 10;
             }
@@ -718,5 +725,4 @@
         root.render(<App />);
     </script>
 </body>
-
 </html>
